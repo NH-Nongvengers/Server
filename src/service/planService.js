@@ -19,7 +19,6 @@ exports.getPlanByNow = async (date) => {
 
 exports.getSumOfBudget = async (planIdx) => {
   try{
-    console.log(planIdx)
     const budget = await Budget.findAll({
       attributes: [[Sequelize.fn('SUM', Sequelize.col('amount')), 'total']],
       where : {

@@ -16,9 +16,13 @@ exports.getBudgetStatus = async (req, res) => {
     const budget = await planService.getSumOfBudget(plan.dataValues.planIdx);
     const availableBalance = await planService.getAvailableBalance(plan);
     const balance = budget[0].dataValues.total - availableBalance[0].dataValues.balance;
+    const day = parseInt(moment(plan.dataValues.endDate, "YYYYMMDD").fromNow().split(" ")[1]) - 1;
+    const month = parseInt(moment().format('MM'));
     res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_PLAN_STATUS_SUCCESS,{
-      plan,
+      month,
+      dDay: day,
       budget: parseInt(budget[0].dataValues.total),
+      amountUsed: parseInt(availableBalance[0].dataValues.balance),
       balance,
     }))
   } catch (err) {
