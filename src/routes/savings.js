@@ -8,4 +8,7 @@ router.post('/', savingsController.makeSavings);
 /** 저금통 확인하기 */
 router.get('/', savingsController.getAllSavings);
 
+/** 월별 절약 저축 금액 확인하기 */
+router.get('/monthly', savingsController.getMonthlySavedSavings);
+
 module.exports = router;

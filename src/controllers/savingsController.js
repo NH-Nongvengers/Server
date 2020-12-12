@@ -110,3 +110,31 @@ exports.getAllSavings = async (req, res) => {
       );
   }
 };
+
+/**
+ * 월별 절약 저축 금액 확인하기
+ */
+exports.getMonthlySavedSavings = async (req, res) => {
+  try {
+    const result = await savingsService.getMonthlySavedSavings();
+    return res
+      .status(statusCode.OK)
+      .send(
+        util.success(
+          statusCode.OK,
+          responseMessage.GET_MONTHLY_SAVED_SAVINGS_SUCCESS,
+          result
+        )
+      );
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(statusCode.INTERNAL_SERVER_ERROR)
+      .send(
+        util.fail(
+          statusCode.INTERNAL_SERVER_ERROR,
+          responseMessage.INTERNAL_SERVER_ERROR
+        )
+      );
+  }
+};
