@@ -72,7 +72,7 @@ exports.getAllSavings = async (req, res) => {
  */
 exports.getMonthlySavedSavings = async () => {
   try {
-    const query = `SELECT plan_idx, amount, T.period
+    const query = `SELECT plan_idx as planIdx, amount, T.period
     FROM (SELECT plan_idx, date_format(start_date, '%Y-%m') as period FROM Plan) as P join 
     (SELECT sum(amount) as amount, date_format(created_at, '%Y-%m') as period FROM TransactionDetail 
     where account=${userInfo.sonAccount} and  transaction_type=3 group by period) as T 
