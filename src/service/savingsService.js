@@ -47,3 +47,28 @@ exports.getAllSavings = async (req, res) => {
     throw err;
   }
 };
+
+/**
+ * 월별 절약 저축 금액 확인하기
+ */
+exports.getMonthlySavedSavings = async () => {
+  try {
+    const result = TransactionDetail.findAll({
+      attributes: [
+        [
+          sequelize.fn('DATE_FORMAT', sequelize.col('created_at'), '%Y-%m'),
+          'period',
+        ],
+        [sequelize.fn('sum', sequelize.col('amount')), 'amount'],
+      ],
+      where: {
+        account: userInfo.sonAccount,
+        transactionType: 3,
+      },
+      group: 'period',
+    });
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
