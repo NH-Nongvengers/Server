@@ -84,6 +84,7 @@ exports.getMonthlySavedSavings = async () => {
         transactionType: 3,
       },
       group: 'period',
+      order: [[sequelize.col('period'), 'DESC']],
     });
     return result;
   } catch (err) {
