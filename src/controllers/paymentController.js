@@ -56,7 +56,7 @@ exports.createPayment = async (req, res) => {
     }
 
     // 잔돈 출금 이체
-    const changeDescription = '잔돈 저금';
+    const changeDescription = description + ' 잔돈 저금';
     await drawTransfer(changes, changeDescription);
     // 농협 입금 이체
     await receivedTransferAccountNumber(
@@ -69,7 +69,7 @@ exports.createPayment = async (req, res) => {
     await savingsService.createTransaction(
       changes,
       userInfo.motherAccount,
-      description,
+      changeDescription,
       4,
       null
     );
@@ -77,7 +77,7 @@ exports.createPayment = async (req, res) => {
     await savingsService.createTransaction(
       changes,
       userInfo.sonAccount,
-      description,
+      changeDescription,
       4,
       null
     );
