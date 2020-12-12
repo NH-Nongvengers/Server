@@ -2,14 +2,14 @@ const https = require('https');
 const URL = 'developers.nonghyup.com';
 const userInfo = require('../config/info.json');
 const moment = require('moment');
-const { config } = require('process');
+const iconv = require('iconv-lite');
 
 /**
  * 농협입금이체
  */
 exports.receivedTransferAccountNumber = async (
   amount,
-  withdrawlDescription,
+  withdrawDescription,
   depositDescription
 ) => {
   const postData = iconv.encode(
@@ -27,7 +27,7 @@ exports.receivedTransferAccountNumber = async (
       Bncd: '011', //은행코드
       Acno: userInfo.sonAccount,
       Tram: amount, //거래금액,
-      DractOtlt: withdrawlDescription, // 출금계좌 인자 내용
+      DractOtlt: withdrawDescription, // 출금계좌 인자 내용
       MractOtlt: depositDescription, // 입금계좌 인자 내용
     }),
     'utf-8'
