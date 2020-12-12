@@ -6,6 +6,7 @@ module.exports = {
 
   /** plan */
   GET_PLAN_STATUS_SUCCESS: '이번달 예산 현황 조회 성공',
+  GET_EXPENDITURE_BY_CATEGORY_SUCCESS: '카테고리별 소비 현황 조회 성공',
   
   NULL_VALUE: '필요한 값이 없습니다.',
   OUT_OF_VALUE: '파라미터 값이 잘못 되었습니다.',
