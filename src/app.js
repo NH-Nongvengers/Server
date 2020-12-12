@@ -11,7 +11,7 @@ var app = express();
 const { sequelize } = require('./models');
 
 sequelize
-  .sync({})
+  .sync({ alter: true })
   .then(() => {
     console.log('데이터베이스 연결 성공.');
   })

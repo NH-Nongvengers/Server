@@ -29,13 +29,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(45),
         allowNull: false,
       },
-      balance: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       categoryIdx: {
         type: DataTypes.INTEGER,
-        allowNull: false,
       },
     },
     {
