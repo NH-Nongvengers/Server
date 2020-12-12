@@ -27,52 +27,57 @@ exports.getBudgetStatus = async (req, res) => {
     }))
   } catch (err) {
     console.log(err);
-    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.success(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR))
+    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR))
   }
 }
 
 exports.expendByCategory = async (req, res) => {
   try {
-    let budget = await Budget.findAll({
-      attributes: ['categoryIdx', [ Sequelize.fn('SUM', Sequelize.col('amount')), 'budget']],
-      group: 'categoryIdx'
-    });
+    const budget = await planService.getBudgetByCategory();
     const now = moment().format('YYYY-MM-DD HH:mm:ss');
     const plan = await planService.getPlanByNow(now);
-    const availableBalance = await TransactionDetail.findAll({
-      attributes: ['categoryIdx',[ Sequelize.fn('SUM', Sequelize.col('amount')), 'balance']],
-      where : {
-        categoryIdx : { [Op.ne]: null },
-        createdAt : { [Op.lte]: plan.dataValues.endDate},
-        createdAt : { [Op.gte]: plan.dataValues.startDate}
-      },
-      group: 'categoryIdx',
-    });
-
+    const availableBalance = await planService.getAvailableBalanceByCategory(plan);
     const category = await Category.findAll({});
-    
-    budget.forEach(item => {
-      item.dataValues.budget = parseInt(item.dataValues.budget)
-      item.dataValues.balance = 0;
-      availableBalance.forEach(element => {
-        if(item.dataValues.categoryIdx === element.dataValues.categoryIdx) {
-          item.dataValues.balance = item.dataValues.budget - element.dataValues.balance;
-        }
-      })
-      category.forEach(element => {
-        if(item.dataValues.categoryIdx === element.dataValues.categoryIdx) {
-          item.dataValues.categoryName = element.dataValues.categoryName;
-        }
-      })
-      item.dataValues.percent = item.dataValues.balance === 0 ? 
-      0 : item.dataValues.balance < 0 ? 
-      Math.floor((-item.dataValues.balance + item.dataValues.budget ) / item.dataValues.budget * 100) 
-      : Math.floor(item.dataValues.balance/item.dataValues.budget * 100);
-    })
-
-    res.status(statusCode.OK).send(util.success(statusCode.OK,responseMessage.GET_EXPENDITURE_BY_CATEGORY_SUCCESS, budget))
+    const result = await planService.getMapping(budget, availableBalance, category);
+    res.status(statusCode.OK).send(util.success(statusCode.OK,responseMessage.GET_EXPENDITURE_BY_CATEGORY_SUCCESS, result));
   } catch (err) {
     console.log(err);
-    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.success(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR))
+    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
+}
+
+exports.getBudgetStatusByMonth = async (req, res) => {
+  const planIdx = req.params.plan_idx;
+  try {
+    const plan = await Plan.findOne({ where : { planIdx }});
+    const budget = await planService.getSumOfBudget(planIdx);
+    const budgetByCategory = await planService.getBudgetByCategory();
+    const availableBalance = await planService.getAvailableBalance(plan);
+    const balance = budget[0].dataValues.total - availableBalance[0].dataValues.balance;
+    const month = parseInt(moment().format('MM'));
+    const availableBalanceByCategory = await planService.getAvailableBalanceByCategory(plan);
+    const category = await Category.findAll({});
+
+    const summary = {
+      month,
+      budget: parseInt(budget[0].dataValues.total),
+      amountUsed: parseInt(availableBalance[0].dataValues.balance),
+      balance,
+    }
+    const result = await planService.getMapping(budgetByCategory, availableBalanceByCategory, category);
+    const overConsumption = result.filter(it => it.dataValues.balance < 0).map(it => {
+      return({
+        categoryIdx:it.dataValues.categoryIdx,
+        categoryName: it.dataValues.categoryName,
+        budget: it.dataValues.budget,
+        consumption: it.dataValues.budget - it.dataValues.balance,
+        percent: Math.floor((it.dataValues.budget - it.dataValues.balance) / it.dataValues.budget * 100),
+      })
+    })
+
+    res.status(statusCode.OK).send(util.success(statusCode.OK,responseMessage.GET_BUDGET_STATUS_BY_MONTH, {summary, overConsumption, result}));
+  } catch (err) {
+    console.log(err);
+    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
 }

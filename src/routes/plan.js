@@ -4,5 +4,6 @@ const planController = require('../controllers/planController');
 
 router.get('/status', planController.getBudgetStatus);
 router.get('/category', planController.expendByCategory);
+router.get('/:plan_idx', planController.getBudgetStatusByMonth);
 
 module.exports = router;
