@@ -27,6 +27,24 @@ exports.createTransaction = async (
 };
 
 /**
+ * 저금 후 저금 유형에 따른 총액 조회
+ */
+exports.getTotalSavingsByType = async (transactionType) => {
+  try {
+    const result = await TransactionDetail.findAll({
+      attributes: [[sequelize.fn('sum', sequelize.col('amount')), 'total']],
+      where: {
+        account: userInfo.sonAccount,
+        transactionType: transactionType,
+      },
+    });
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/**
  * 저금통 확인하기
  */
 exports.getAllSavings = async (req, res) => {
