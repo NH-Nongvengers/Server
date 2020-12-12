@@ -62,3 +62,51 @@ exports.makeSavings = async (req, res) => {
       );
   }
 };
+
+/**
+ * 저금통 확인하기
+ */
+exports.getAllSavings = async (req, res) => {
+  try {
+    const result = await savingsService.getAllSavings();
+
+    data = {
+      sum: 0,
+      saved: 0, // 절약 저금 : 3
+      changes: 0, // 잔동 저금 : 4
+      coin: 0, // 동전 저금 : 5
+    };
+
+    result.forEach((element) => {
+      if (element.transactionType == 3) {
+        data.saved = parseInt(element.amount);
+      } else if (element.transactionType == 4) {
+        data.changes = parseInt(element.amount);
+      } else if (element.transactionType == 5) {
+        data.coin = parseInt(element.amount);
+      }
+    });
+
+    data.sum = data.saved + data.changes + data.coin;
+
+    return res
+      .status(statusCode.OK)
+      .send(
+        util.success(
+          statusCode.OK,
+          responseMessage.GET_ALL_SAVINGS_INFO_SUCCESS,
+          data
+        )
+      );
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(statusCode.INTERNAL_SERVER_ERROR)
+      .send(
+        util.fail(
+          statusCode.INTERNAL_SERVER_ERROR,
+          responseMessage.INTERNAL_SERVER_ERROR
+        )
+      );
+  }
+};
