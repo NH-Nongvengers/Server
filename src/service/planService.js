@@ -47,3 +47,12 @@ exports.getAvailableBalance = async (plan) => {
     throw err;
   }
 }
+
+exports.example = async () => {
+  try{
+
+  } catch (err) {
+    throw err;
+  }
+}
+
