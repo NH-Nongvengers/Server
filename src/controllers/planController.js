@@ -66,8 +66,8 @@ exports.expendByCategory = async (req, res) => {
       })
       item.dataValues.percent = item.dataValues.balance === 0 ? 
       0 : item.dataValues.balance < 0 ? 
-      (-item.dataValues.balance + item.dataValues.budget ) / item.dataValues.budget * 100 
-      : item.dataValues.balance/item.dataValues.budget * 100;
+      Math.floor((-item.dataValues.balance + item.dataValues.budget ) / item.dataValues.budget * 100) 
+      : Math.floor(item.dataValues.balance/item.dataValues.budget * 100);
     })
 
     res.status(statusCode.OK).send(util.success(statusCode.OK,responseMessage.GET_EXPENDITURE_BY_CATEGORY_SUCCESS, budget))
