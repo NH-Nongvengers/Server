@@ -1,6 +1,7 @@
-const { TransactionDetail } = require('../models');
+const { TransactionDetail, Plan } = require('../models');
 const userInfo = require('../config/info.json');
 const sequelize = require('sequelize');
+const db = require('../models/index');
 
 /**
  * 거래내역 작성
@@ -71,20 +72,15 @@ exports.getAllSavings = async (req, res) => {
  */
 exports.getMonthlySavedSavings = async () => {
   try {
-    const result = TransactionDetail.findAll({
-      attributes: [
-        [
-          sequelize.fn('DATE_FORMAT', sequelize.col('created_at'), '%Y-%m'),
-          'period',
-        ],
-        [sequelize.fn('sum', sequelize.col('amount')), 'amount'],
-      ],
-      where: {
-        account: userInfo.sonAccount,
-        transactionType: 3,
-      },
-      group: 'period',
-      order: [[sequelize.col('period'), 'DESC']],
+    const query = `SELECT plan_idx, amount, T.period
+    FROM (SELECT plan_idx, date_format(start_date, '%Y-%m') as period FROM Plan) as P join 
+    (SELECT sum(amount) as amount, date_format(created_at, '%Y-%m') as period FROM TransactionDetail 
+    where account=${userInfo.sonAccount} and  transaction_type=3 group by period) as T 
+    ON P.period=T.period ORDER BY T.period DESC;`;
+
+    const result = await db.sequelize.query(query, {
+      type: sequelize.QueryTypes.SELECT,
+      raw: true,
     });
     return result;
   } catch (err) {
