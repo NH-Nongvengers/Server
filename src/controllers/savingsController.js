@@ -45,10 +45,19 @@ exports.makeSavings = async (req, res) => {
       categoryIdx
     );
 
+    // 저금 후 유형에 따른 총 금액 확인
+    const afterBalance = await savingsService.getTotalSavingsByType(
+      transactionType
+    );
+
     return res
       .status(statusCode.OK)
       .send(
-        util.success(statusCode.OK, responseMessage.SAVINGS_CREATE_SUCCESS)
+        util.success(
+          statusCode.OK,
+          responseMessage.SAVINGS_CREATE_SUCCESS,
+          afterBalance[0]
+        )
       );
   } catch (err) {
     console.error(err);
