@@ -1,4 +1,7 @@
 module.exports = {
+  /** payment */
+  CREATE_PAYMENT_SUCCESS: '결제 성공',
+
   /** savings */
   SAVINGS_CREATE_SUCCESS: '저축하기 성공',
   GET_ALL_SAVINGS_INFO_SUCCESS: '저금통 정보 조회 성공',

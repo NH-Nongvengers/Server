@@ -29,7 +29,7 @@ exports.makeSavings = async (req, res) => {
       amount,
       userInfo.motherAccount,
       description,
-      1,
+      transactionType,
       categoryIdx
     );
 
