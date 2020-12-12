@@ -7,5 +7,6 @@ router.get('/', function (req, res, next) {
 });
 
 router.use('/api/savings', require('./savings'));
+router.use('/api/plan', require('./plan'));
 
 module.exports = router;
