@@ -2,6 +2,7 @@ const { TransactionDetail, Plan } = require('../models');
 const userInfo = require('../config/info.json');
 const sequelize = require('sequelize');
 const db = require('../models/index');
+const moment = require('moment');
 
 /**
  * 거래내역 작성
@@ -117,6 +118,25 @@ exports.getChangesSavingsHistory = async () => {
         [sequelize.Op.and]: [sequelize.literal('MOD(amount, 1000) <> 0')],
       },
       order: [['createdAt', 'DESC']],
+    });
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/**
+ * 해당 월에 절약저금으로 모인 금액 조회
+ */
+exports.getSavedSavingsAmount = async () => {
+  try {
+    const now = moment().format('YYYY-MM-DD HH:mm:ss');
+    const query = `SELECT GREATEST(SUM(amount) - SUM(total), 0) as amount FROM Budget where plan_idx = (SELECT plan_idx FROM Plan 
+      where '${now}'>= start_date and '${now}' <= end_date);`;
+
+    const result = await db.sequelize.query(query, {
+      type: sequelize.QueryTypes.SELECT,
+      raw: true,
     });
     return result;
   } catch (err) {

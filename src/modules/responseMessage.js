@@ -7,6 +7,7 @@ module.exports = {
   GET_ALL_SAVINGS_INFO_SUCCESS: '저금통 정보 조회 성공',
   GET_MONTHLY_SAVED_SAVINGS_SUCCESS: '월별 절약 저축 금액 조회 성공',
   GET_CHANGES_SAVINGS_HISTORY_SUCCESS: '잔돈 모으기 내역 조회 성공',
+  GET_SAVED_SAVINGS_AMOUNT_SUCCESS: '절약 저축 가능 금액 조회 성공',
 
   /** plan */
   GET_PLAN_STATUS_SUCCESS: '이번달 예산 현황 조회 성공',
