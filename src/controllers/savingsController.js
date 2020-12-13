@@ -153,3 +153,96 @@ exports.getMonthlySavedSavings = async (req, res) => {
       );
   }
 };
+
+/**
+ *  잔돈 모으기 저축 내역 조회
+ */
+exports.getChangesSavingsHistory = async (req, res) => {
+  try {
+    const CHANGES_TRANSACTION_TYPE = 4;
+    let total = await savingsService.getTotalSavingsByType(
+      CHANGES_TRANSACTION_TYPE
+    );
+    total = total[0].dataValues.total;
+
+    const data = await savingsService.getChangesSavingsHistory();
+
+    const monthResultMap = new Map();
+    data.forEach((item) => {
+      if (monthResultMap.has(item.dataValues.month)) {
+        monthResultMap.get(item.dataValues.month)[item.dataValues.month].push({
+          transactionName: item.dataValues.transactionName,
+          amount: item.dataValues.amount,
+          changes: item.dataValues.changes,
+          time: item.dataValues.time,
+          date: item.dataValues.date,
+        });
+      } else {
+        monthResultMap.set(item.dataValues.month, {
+          [item.dataValues.month]: [
+            {
+              transactionName: item.dataValues.transactionName,
+              amount: item.dataValues.amount,
+              changes: item.dataValues.changes,
+              time: item.dataValues.time,
+              date: item.dataValues.date,
+            },
+          ],
+        });
+      }
+    });
+
+    const monthResult = [...monthResultMap.values()];
+
+    const resultMap = new Map();
+    monthResult.forEach((monthList) => {
+      let key = Object.keys(monthList);
+      key = key[0];
+      let dateResultMap = new Map();
+      monthList[key].forEach((item) => {
+        if (dateResultMap.has(item.date)) {
+          dateResultMap.get(item.date)[item.date].push({
+            transactionName: item.transactionName,
+            time: item.time,
+            changes: item.changes,
+            amount: item.amount,
+          });
+        } else {
+          dateResultMap.set(item.date, {
+            [item.date]: [
+              {
+                transactionName: item.transactionName,
+                time: item.time,
+                changes: item.changes,
+                amount: item.amount,
+              },
+            ],
+          });
+        }
+      });
+      resultMap.set(key, { [key]: [...dateResultMap.values()] });
+    });
+
+    const result = [...resultMap.values()];
+
+    return res
+      .status(statusCode.OK)
+      .send(
+        util.success(
+          statusCode.OK,
+          responseMessage.GET_CHANGES_SAVINGS_HISTORY_SUCCESS,
+          result
+        )
+      );
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(statusCode.INTERNAL_SERVER_ERROR)
+      .send(
+        util.fail(
+          statusCode.INTERNAL_SERVER_ERROR,
+          responseMessage.INTERNAL_SERVER_ERROR
+        )
+      );
+  }
+};
