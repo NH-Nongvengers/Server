@@ -61,12 +61,13 @@ exports.getMapping = async (budget, availableBalance, category) => {
           item.dataValues.categoryName = element.dataValues.categoryName;
         }
       })
-      item.dataValues.percent = item.dataValues.balance === 0 ? 0 
+      item.dataValues.percent = (item.dataValues.balance === 0 || item.dataValues.budget ===0 ) ? 0 
       : item.dataValues.balance < 0 ? 
-      (Math.floor((-item.dataValues.balance + item.dataValues.budget ) / item.dataValues.budget * 100) !== null ? 0 
+      (Math.floor((-item.dataValues.balance + item.dataValues.budget ) / item.dataValues.budget * 100) === null ? 0 
       :(Math.floor((-item.dataValues.balance + item.dataValues.budget ) / item.dataValues.budget * 100)))
       : Math.floor(item.dataValues.balance/item.dataValues.budget * 100);
     })
+  
     return budget;
   } catch (err) {
     throw err;

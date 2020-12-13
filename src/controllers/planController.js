@@ -73,7 +73,8 @@ exports.getBudgetStatusByMonth = async (req, res) => {
           categoryName: it.dataValues.categoryName,
           budget: it.dataValues.budget,
           consumption: it.dataValues.budget - it.dataValues.balance,
-          percent: Math.floor((it.dataValues.budget - it.dataValues.balance) / it.dataValues.budget * 100),
+          percent: it.dataValues.budget === 0 ? 0 
+          : Math.floor((it.dataValues.budget - it.dataValues.balance) / it.dataValues.budget * 100),
         })
       });
 
@@ -134,4 +135,11 @@ exports.getConsumptionDetail = async (req, res) => {
     console.log(err);
     res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
+}
+
+/**
+ * 
+ */
+exports.getBudgetChange =  async (req, res) => {
+
 }
