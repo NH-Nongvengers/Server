@@ -246,3 +246,31 @@ exports.getChangesSavingsHistory = async (req, res) => {
       );
   }
 };
+
+/**
+ * 해당 월에 절약저금으로 모인 금액 조회
+ */
+exports.getSavedSavingsAmount = async (req, res) => {
+  try {
+    const result = await savingsService.getSavedSavingsAmount();
+    return res
+      .status(statusCode.OK)
+      .send(
+        util.success(
+          statusCode.OK,
+          responseMessage.GET_SAVED_SAVINGS_AMOUNT_SUCCESS,
+          result
+        )
+      );
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(statusCode.INTERNAL_SERVER_ERROR)
+      .send(
+        util.fail(
+          statusCode.INTERNAL_SERVER_ERROR,
+          responseMessage.INTERNAL_SERVER_ERROR
+        )
+      );
+  }
+};

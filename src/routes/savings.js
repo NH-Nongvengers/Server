@@ -14,4 +14,7 @@ router.get('/monthly', savingsController.getMonthlySavedSavings);
 /** 잔돈 모으기 저축 내역 조회 */
 router.get('/changes', savingsController.getChangesSavingsHistory);
 
+/** 해당 월에 절약저금으로 모인 금액 조회 */
+router.get('/saved', savingsController.getSavedSavingsAmount);
+
 module.exports = router;
