@@ -15,6 +15,7 @@ module.exports = {
   GET_BUDGET_STATUS_BY_MONTH: '월별 리포트 조회성공',
   GET_DETAIL_CONSUMPTION_SUCCESS: '소비 상세 내역 조회 성공',
   GET_BUDGET_SUCCESS: '예산 조회 성공',
+  UPDATE_BUDGET_SUCCESS: '예산 업데이트 성공',
 
   NULL_VALUE: '필요한 값이 없습니다.',
   OUT_OF_VALUE: '파라미터 값이 잘못 되었습니다.',

@@ -205,3 +205,24 @@ exports.getBudgetChange =  async (req, res) => {
     res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
 }
+
+exports.updateBudget = async (req, res) => {
+  const planIdx = 1;
+  try {
+    const data = Object.entries(req.body);
+    for(let i in data) {
+      await Budget.update({
+        amount: data[i][1]
+      },{
+        where: { 
+          planIdx,
+          categoryIdx: (parseInt(i) + 1)
+        }
+      })
+    }
+   res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.UPDATE_BUDGET_SUCCESS, []));
+  } catch (err) {
+    console.log(err);
+    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
+}
