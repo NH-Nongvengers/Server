@@ -160,18 +160,18 @@ exports.getBudgetChange =  async (req, res) => {
     });
 
     const sumBudget = await Budget.findOne({
-      attributes: [[Sequelize.fn('SUM', Sequelize.col('total')), 'sumTotal'],[Sequelize.fn('SUM', Sequelize.col('amount')), 'sumAmount']],
+      attributes: [[Sequelize.fn('SUM', Sequelize.col('total')), 'sumTotal'],[Sequelize.fn('SUM', Sequelize.col('amount')), 'sumBudget']],
       where: {
         planIdx: plans.map(it => it.dataValues.planIdx),
       },
     })
 
-    dto.averageBudget = parseInt(sumBudget.dataValues.sumAmount / 3);
-    dto.sumTotal = parseInt(sumBudget.dataValues.sumTotal / 3);
+    dto.averageBudget = parseInt(sumBudget.dataValues.sumBudget / 3);
+    dto.averageTotal = parseInt(sumBudget.dataValues.sumTotal / 3);
 
     //카테고리별 평균 예산
     const sumBudgetCategory = await Budget.findAll({
-      attributes: ['categoryIdx',[Sequelize.fn('SUM', Sequelize.col('amount')), 'sumAmount']],
+      attributes: ['categoryIdx',[Sequelize.fn('SUM', Sequelize.col('amount')), 'sumBudget']],
       where: {
         planIdx: plans.map(it => it.dataValues.planIdx),
       },
@@ -184,8 +184,9 @@ exports.getBudgetChange =  async (req, res) => {
       }
     })
 
-    sumBudgetCategory.forEach(item => {
-      item.dataValues.sumAmount = parseInt(item.dataValues.sumAmount/3)
+    sumBudgetCategory.map(item => {
+      item.dataValues.categoryAverageBudget = parseInt(item.dataValues.sumBudget/3);
+      delete item.dataValues.sumBudget;
       category.forEach(element => {
         if(item.dataValues.categoryIdx === element.dataValues.categoryIdx) {
           item.dataValues.categoryName = element.dataValues.categoryName;
@@ -195,7 +196,7 @@ exports.getBudgetChange =  async (req, res) => {
 
     dto.sumBudgetCategory = sumBudgetCategory
 
-    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_DETAIL_CONSUMPTION_SUCCESS, dto));
+    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_BUDGET_SUCCESS, dto));
   } catch (err) {
     console.log(err);
     res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
