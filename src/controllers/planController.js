@@ -128,9 +128,12 @@ exports.getConsumptionDetail = async (req, res) => {
       }
     })
 
-    const detail = [...resultMap.values()];
+    const transactionDetails = {};
+    for (let [key, value] of resultMap.entries()){
+      transactionDetails["d"+key] = resultMap.get(key)[key];
+    }
 
-    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_DETAIL_CONSUMPTION_SUCCESS, {month, amountOfCategory, detail}));
+    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_DETAIL_CONSUMPTION_SUCCESS, {month, amountOfCategory, transactionDetails}));
   } catch (err) {
     console.log(err);
     res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
