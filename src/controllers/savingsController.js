@@ -220,10 +220,17 @@ exports.getChangesSavingsHistory = async (req, res) => {
           });
         }
       });
-      resultMap.set(key, { [key]: [...dateResultMap.values()] });
+      const result = {};
+      for (let [key, value] of dateResultMap.entries()) {
+        result['d' + key] = dateResultMap.get(key)[key];
+      }
+      resultMap.set(key, result);
     });
 
-    const result = [...resultMap.values()];
+    const result = {};
+    for (let [key, value] of resultMap.entries()) {
+      result['m' + key] = resultMap.get(key);
+    }
 
     return res
       .status(statusCode.OK)
