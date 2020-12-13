@@ -141,5 +141,63 @@ exports.getConsumptionDetail = async (req, res) => {
  * 
  */
 exports.getBudgetChange =  async (req, res) => {
+  const dto = {};
+  const planIdx = 1;
+  try {
+    const plan = await Plan.findOne({
+      attributes: ['startDate'],
+      where : { planIdx }
+    });
 
+    const plans = await Plan.findAll({
+      attributes: ['planIdx'],
+      where : {
+        startDate: { [Op.lte]: plan.dataValues.startDate }
+      },
+      order : [['startDate', 'DESC']],
+      limit : 3,
+      offset: 1
+    });
+
+    const sumBudget = await Budget.findOne({
+      attributes: [[Sequelize.fn('SUM', Sequelize.col('total')), 'sumTotal'],[Sequelize.fn('SUM', Sequelize.col('amount')), 'sumAmount']],
+      where: {
+        planIdx: plans.map(it => it.dataValues.planIdx),
+      },
+    })
+
+    dto.averageBudget = parseInt(sumBudget.dataValues.sumAmount / 3);
+    dto.sumTotal = parseInt(sumBudget.dataValues.sumTotal / 3);
+
+    //카테고리별 평균 예산
+    const sumBudgetCategory = await Budget.findAll({
+      attributes: ['categoryIdx',[Sequelize.fn('SUM', Sequelize.col('amount')), 'sumAmount']],
+      where: {
+        planIdx: plans.map(it => it.dataValues.planIdx),
+      },
+      group: 'categoryIdx'
+    });
+
+    const category = await Category.findAll({
+      where : {
+        categoryIdx: sumBudgetCategory.map(it => it.dataValues.categoryIdx),
+      }
+    })
+
+    sumBudgetCategory.forEach(item => {
+      item.dataValues.sumAmount = parseInt(item.dataValues.sumAmount/3)
+      category.forEach(element => {
+        if(item.dataValues.categoryIdx === element.dataValues.categoryIdx) {
+          item.dataValues.categoryName = element.dataValues.categoryName;
+        }
+      })
+    });
+
+    dto.sumBudgetCategory = sumBudgetCategory
+
+    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_DETAIL_CONSUMPTION_SUCCESS, dto));
+  } catch (err) {
+    console.log(err);
+    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
 }
