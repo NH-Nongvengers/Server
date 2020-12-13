@@ -51,10 +51,10 @@ exports.getBudgetStatusByMonth = async (req, res) => {
   try {
     const plan = await Plan.findOne({ where : { planIdx }});
     const budget = await planService.getSumOfBudget(planIdx);
-    const budgetByCategory = await planService.getBudgetByCategory();
+    const budgetByCategory = await planService.getBudgetByCategoryPlan(plan);
     const availableBalance = await planService.getAvailableBalance(plan);
     const balance = budget[0].dataValues.total - availableBalance[0].dataValues.balance;
-    const month = parseInt(moment().format('MM'));
+    const month = parseInt(moment(plan.dataValues.startDate).format('MM'));
     const availableBalanceByCategory = await planService.getAvailableBalanceByCategory(plan);
     const category = await Category.findAll({});
 
@@ -65,17 +65,71 @@ exports.getBudgetStatusByMonth = async (req, res) => {
       balance,
     }
     const result = await planService.getMapping(budgetByCategory, availableBalanceByCategory, category);
-    const overConsumption = result.filter(it => it.dataValues.balance < 0).map(it => {
-      return({
-        categoryIdx:it.dataValues.categoryIdx,
-        categoryName: it.dataValues.categoryName,
-        budget: it.dataValues.budget,
-        consumption: it.dataValues.budget - it.dataValues.balance,
-        percent: Math.floor((it.dataValues.budget - it.dataValues.balance) / it.dataValues.budget * 100),
-      })
-    })
+    const overConsumption = result
+      .filter(it => it.dataValues.balance < 0)
+      .map(it => {
+        return({
+          categoryIdx:it.dataValues.categoryIdx,
+          categoryName: it.dataValues.categoryName,
+          budget: it.dataValues.budget,
+          consumption: it.dataValues.budget - it.dataValues.balance,
+          percent: Math.floor((it.dataValues.budget - it.dataValues.balance) / it.dataValues.budget * 100),
+        })
+      });
 
     res.status(statusCode.OK).send(util.success(statusCode.OK,responseMessage.GET_BUDGET_STATUS_BY_MONTH, {summary, overConsumption, result}));
+  } catch (err) {
+    console.log(err);
+    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
+}
+
+/** 월, 카테고리별 소비 상세 내역 */
+exports.getConsumptionDetail = async (req, res) => {
+  const { plan_idx: planIdx, idx: categoryIdx } = req.params;
+  try {
+    const plan = await Plan.findOne({ where : { planIdx }});
+    const month = parseInt(moment(plan.dataValues.startDate).format('MM'));
+    const amountOfCategory = await planService.getOneAvailableBalanceByCategory(plan, parseInt(categoryIdx));
+    let detailAmount = await TransactionDetail.findAll({
+      attributes: ['transactionName', 'createdAt', 'amount'],
+      where: {
+        [Op.and]: [{createdAt : { [Op.lte]: plan.dataValues.endDate}}, {createdAt : { [Op.gte]: plan.dataValues.startDate}}],
+        transactionType: 2, //지출만
+        categoryIdx,
+      },
+      order: [['createdAt', 'DESC']],
+    })
+    detailAmount = detailAmount === null ? [] : detailAmount;
+    detailAmount.map(item => {
+      item.dataValues.date = parseInt(moment(item.dataValues.createdAt).format('DD'));
+      item.dataValues.time = moment(item.dataValues.createdAt).format('HH:mm');
+      delete item.dataValues.createdAt;
+    });
+
+    const resultMap = new Map();
+
+    detailAmount.forEach(item => {
+      if(resultMap.has(item.dataValues.date)){
+        resultMap.get(item.dataValues.date)[item.dataValues.date].push({
+          transactionName: item.dataValues.transactionName,
+          amount: item.dataValues.amount,
+          time: item.dataValues.time,
+        })
+      } else {
+        resultMap.set(item.dataValues.date, {
+          [item.dataValues.date]: [{
+            transactionName: item.dataValues.transactionName,
+            amount: item.dataValues.amount,
+            time: item.dataValues.time,
+          }],
+        })
+      }
+    })
+
+    const detail = [...resultMap.values()];
+
+    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.GET_DETAIL_CONSUMPTION_SUCCESS, {month, amountOfCategory, detail}));
   } catch (err) {
     console.log(err);
     res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
