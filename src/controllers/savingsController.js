@@ -16,7 +16,13 @@ const savingsService = require('../service/savingsService');
 exports.makeSavings = async (req, res) => {
   const { amount, transactionType } = req.body;
 
-  const description = moment().format('MM월 DD일 저금');
+  let description = '';
+  if (transactionType == 5) {
+    description = '동전 넣기';
+  } else if (transactionType == 3) {
+    description = moment().format('MM월 DD일 저금');
+  }
+
   const categoryIdx = null;
 
   try {
