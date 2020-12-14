@@ -34,7 +34,16 @@ exports.createTransaction = async (
 exports.getTotalSavingsByType = async (transactionType) => {
   try {
     const result = await TransactionDetail.findAll({
-      attributes: [[sequelize.fn('sum', sequelize.col('amount')), 'total']],
+      attributes: [
+        [
+          sequelize.fn(
+            'TRUNCATE',
+            sequelize.fn('sum', sequelize.col('amount')),
+            -2 // 100원 단위 버림하기
+          ),
+          'total',
+        ],
+      ],
       where: {
         account: userInfo.sonAccount,
         transactionType: transactionType,
@@ -54,7 +63,15 @@ exports.getAllSavings = async (req, res) => {
     const result = await TransactionDetail.findAll({
       attributes: [
         'transactionType',
-        [sequelize.fn('sum', sequelize.col('amount')), 'amount'],
+
+        [
+          sequelize.fn(
+            'TRUNCATE',
+            sequelize.fn('sum', sequelize.col('amount')),
+            -2 // 100원 단위 버림하기
+          ),
+          'amount',
+        ],
       ],
       where: {
         account: userInfo.sonAccount,
@@ -73,7 +90,7 @@ exports.getAllSavings = async (req, res) => {
  */
 exports.getMonthlySavedSavings = async () => {
   try {
-    const query = `SELECT plan_idx as planIdx, amount, T.period
+    const query = `SELECT plan_idx as planIdx, Truncate(amount, -2) as amount, T.period
     FROM (SELECT plan_idx, date_format(start_date, '%Y-%m') as period FROM Plan) as P join 
     (SELECT sum(amount) as amount, date_format(created_at, '%Y-%m') as period FROM TransactionDetail 
     where account=${userInfo.sonAccount} and  transaction_type=3 group by period) as T 
@@ -131,7 +148,7 @@ exports.getChangesSavingsHistory = async () => {
 exports.getSavedSavingsAmount = async () => {
   try {
     const now = moment().format('YYYY-MM-DD HH:mm:ss');
-    const query = `SELECT GREATEST(SUM(amount) - SUM(total), 0) as amount FROM Budget where plan_idx = (SELECT plan_idx FROM Plan 
+    const query = `SELECT GREATEST(Truncate(SUM(amount) - SUM(total), -2), 0) as amount FROM Budget where plan_idx = (SELECT plan_idx FROM Plan 
       where '${now}'>= start_date and '${now}' <= end_date);`;
 
     const result = await db.sequelize.query(query, {
