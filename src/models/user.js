@@ -11,6 +11,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(10),
         allowNull: false,
       },
+      autoSave: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      autoSavePeriod: {
+        type: DataTypes.INTEGER,
+      },
     },
     {
       freezeTableName: true,
