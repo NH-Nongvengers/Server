@@ -227,9 +227,9 @@ exports.getChangesSavingsHistory = async (req, res) => {
       resultMap.set(key, result);
     });
 
-    const result = {};
+    const history = {};
     for (let [key, value] of resultMap.entries()) {
-      result['m' + key] = resultMap.get(key);
+      history['m' + key] = resultMap.get(key);
     }
 
     return res
@@ -238,7 +238,7 @@ exports.getChangesSavingsHistory = async (req, res) => {
         util.success(
           statusCode.OK,
           responseMessage.GET_CHANGES_SAVINGS_HISTORY_SUCCESS,
-          result
+          { total, history }
         )
       );
   } catch (err) {
@@ -283,7 +283,7 @@ exports.getSavedSavingsAmount = async (req, res) => {
 };
 
 /**
- * 잔돈 모으기 저축 내역 조회
+ * 티끌 모으기 저축 내역 조회
  */
 exports.getCoinsSavingsHistory = async (req, res) => {
   try {
