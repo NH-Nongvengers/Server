@@ -363,7 +363,7 @@ exports.getCoinsSavingsHistory = async (req, res) => {
       .send(
         util.success(
           statusCode.OK,
-          responseMessage.GET_CHANGES_SAVINGS_HISTORY_SUCCESS,
+          responseMessage.GET_COINS_SAVINGS_HISTORY_SUCCESS,
           { total, history }
         )
       );
