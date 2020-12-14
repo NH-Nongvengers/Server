@@ -143,3 +143,37 @@ exports.getSavedSavingsAmount = async () => {
     throw err;
   }
 };
+
+/**
+ * 티끌 모으기 내역 조회하기
+ */
+exports.getCoinsSavingsHistory = async (coinsTransactionType) => {
+  try {
+    const result = await TransactionDetail.findAll({
+      attributes: [
+        'transactionName',
+        [
+          sequelize.fn('date_format', sequelize.col('created_at'), '%m'),
+          'month',
+        ],
+        [
+          sequelize.fn('date_format', sequelize.col('created_at'), '%d'),
+          'date',
+        ],
+        [
+          sequelize.fn('date_format', sequelize.col('created_at'), '%H:%i'),
+          'time',
+        ],
+        'amount',
+      ],
+      where: {
+        account: userInfo.sonAccount,
+        transactionType: coinsTransactionType,
+      },
+      order: [['createdAt', 'DESC']],
+    });
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
